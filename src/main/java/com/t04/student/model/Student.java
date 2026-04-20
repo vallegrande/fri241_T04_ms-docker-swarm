@@ -35,8 +35,5 @@ public class Student {
     @Column("register_date")
     private LocalDate registerDate; // Fecha de registro
 
-    @Column("register_update_date")
-    private LocalDate registerUpdateDate; // Fecha de actualización
-
     private String status; // Estado: A=Activo, I=Inactivo
 }

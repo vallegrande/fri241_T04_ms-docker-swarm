@@ -35,7 +35,6 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public Mono<Student> save(Student student) {
         student.setRegisterDate(LocalDate.now());
-        student.setRegisterUpdateDate(LocalDate.now());
         student.setStatus("A"); // Activo al crear
         log.info("Guardando estudiante: {}", student);
         return repository.save(student);
@@ -53,7 +52,6 @@ public class StudentServiceImpl implements StudentService {
                     existing.setEmail(student.getEmail());
                     existing.setGrade(student.getGrade());
                     existing.setSection(student.getSection());
-                    existing.setRegisterUpdateDate(LocalDate.now());
                     return repository.save(existing);
                 });
     }
@@ -64,7 +62,6 @@ public class StudentServiceImpl implements StudentService {
         return repository.findById(id)
                 .flatMap(existing -> {
                     existing.setStatus("I"); // Inactivo al eliminar
-                    existing.setRegisterUpdateDate(LocalDate.now());
                     return repository.save(existing);
                 });
     }
@@ -75,7 +72,6 @@ public class StudentServiceImpl implements StudentService {
         return repository.findById(id)
                 .flatMap(existing -> {
                     existing.setStatus("A"); // Activo al restaurar
-                    existing.setRegisterUpdateDate(LocalDate.now());
                     return repository.save(existing);
                 });
     }

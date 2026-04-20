@@ -1,0 +1,7 @@
+com\t04\student\model\Student.class
+com\t04\student\service\StudentService.class
+com\t04\student\repository\StudentRepository.class
+com\t04\student\config\OpenApiConfig.class
+com\t04\student\service\impl\StudentServiceImpl.class
+com\t04\student\MsStudentApplication.class
+com\t04\student\rest\StudentRest.class
