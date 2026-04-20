@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/v1/api/student")
@@ -47,5 +49,10 @@ public class StudentRest {
     @PatchMapping("/restore/{id}")
     public Mono<Student> restore(@PathVariable Long id) {
         return service.restore(id);
+    }
+
+    @GetMapping("/health")
+    public Mono<Map<String, String>> health() {
+        return Mono.just(Map.of("status", "UP", "service", "ms-student"));
     }
 }
