@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  ms-student:
+    image: ms-student:1.0
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=r2dbc:postgresql://db:5432/student_db
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=secret
+    networks:
+      - ms-net
+    depends_on:
+      - db
+    restart: always
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  db:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=student_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - ms-net
+    restart: always
+
+networks:
+  ms-net:
+    driver: bridge
+
+volumes:
+  db-data:

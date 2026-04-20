@@ -1,0 +1,24 @@
+server:
+  port: ${PORT:8080}
+  url: ${SERVER_URL:http://localhost:8080}
+
+spring:
+  application:
+    name: ms-student
+  r2dbc:
+    url: ${DATABASE_URL:r2dbc:postgresql://localhost:5432/student_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:secret}
+    pool:
+      max-idle-time: 10m
+      validation-query: SELECT 1
+      initial-size: 1
+      max-size: 5
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
