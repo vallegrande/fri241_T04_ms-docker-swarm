@@ -1,19 +1,32 @@
 server:
-  port: 8082
-  url: http://localhost:8082
+  port: 8080
+  url: http://localhost:8080
 
 spring:
   application:
     name: ms-student
   r2dbc:
-    url: r2dbc:postgresql://ep-withered-shape-anlsd669-pooler.c-6.us-east-1.aws.neon.tech/duban_salas_35?sslmode=require&channel_binding=require
-    username: neondb_owner
-    password: npg_mWdQ7hoGT3UF
+    url: ${DATABASE_URL:r2dbc:postgresql://db:5432/student_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:secret}
     pool:
       max-idle-time: 10m
       validation-query: SELECT 1
       initial-size: 1
       max-size: 5
+  sql:
+  init:
+    mode: always
+    schema-locations: classpath:schema.sql
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
 
 springdoc:
   api-docs:

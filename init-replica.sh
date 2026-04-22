@@ -16,4 +16,5 @@ PGPASSWORD=replicator_secret pg_basebackup \
   -D "$PGDATA" \
   -P -Xs -R
 
+chmod 700 "$PGDATA"
 echo "Réplica inicializada correctamente"

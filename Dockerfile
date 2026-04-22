@@ -1,5 +1,6 @@
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+RUN apk add --no-cache wget
 COPY target/ms-student-1.0.0.jar app.jar
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
