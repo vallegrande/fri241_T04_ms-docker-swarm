@@ -1,4 +1,4 @@
-const BASE_URL = '/v1/api/student'
+const BASE_URL = 'http://localhost:8080/v1/api/student';
 
 export const getStudents = () =>
   fetch(BASE_URL).then(r => r.json())
