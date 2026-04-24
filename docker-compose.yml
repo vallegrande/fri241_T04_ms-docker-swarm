@@ -1,94 +1,87 @@
+version: "3.8"
+
 services:
   ms-student:
     image: ms-student:1.0
     ports:
       - "8080:8080"
     environment:
-      - DATABASE_URL=r2dbc:postgresql://db:5432/student_db
-      - DATABASE_USERNAME=postgres
-      - DATABASE_PASSWORD=secret
+      DATABASE_URL: r2dbc:postgresql://db:5432/student_db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: secret
     networks:
       - ms-net
+    depends_on:
+      - db
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/v1/api/student/health"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/v1/api/student/health || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 60s
     deploy:
       replicas: 1
       restart_policy:
-        condition: on-failure
-        delay: 5s
+        condition: any
+        delay: 15s
         max_attempts: 2
+        window: 120s
+      placement:
+        preferences:
+          - spread: node.id
       resources:
         limits:
-          cpus: "0.5"
           memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+      update_config:
+        parallelism: 1
+        delay: 20s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: pause
 
   db:
     image: postgres:15
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=student_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=secret
+      POSTGRES_DB: student_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
     volumes:
       - db-data:/var/lib/postgresql/data
-      - ./init-primary.sh:/docker-entrypoint-initdb.d/init-primary.sh
+      - ./src/main/resources/sql/schema.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - ms-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d student_db"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 10s
       retries: 5
+      start_period: 60s
     deploy:
-      replicas: 1
+      replicas: 2
       restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 2
+        condition: any
+        delay: 10s
+        max_attempts: 10
+        window: 120s
       placement:
         constraints:
           - node.role == manager
       resources:
         limits:
-          cpus: "0.1"
           memory: 512M
-
-  db-replica:
-    image: postgres:15
-    ports:
-      - "5433:5432"
-    environment:
-      - POSTGRES_DB=student_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=secret
-      - PGUSER=replicator
-      - PGPASSWORD=replicator_secret
-      - PRIMARY_HOST=db
-    volumes:
-      - db-replica-data:/var/lib/postgresql/data
-      - ./init-replica.sh:/docker-entrypoint-initdb.d/init-replica.sh
-    networks:
-      - ms-net
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d student_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-        max_attempts: 2
-      resources:
-        limits:
-          cpus: "0.1"
-          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   frontend:
     image: ms-frontend:1.0
@@ -96,18 +89,34 @@ services:
       - "3000:80"
     networks:
       - ms-net
+    depends_on:
+      - ms-student
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     deploy:
       replicas: 1
       restart_policy:
-        condition: on-failure
-        delay: 40s
-        max_attempts: 2
+        condition: any
+        delay: 10s
+        max_attempts: 10
+        window: 120s
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
 
 networks:
   ms-net:
-    driver: overlay
-    attachable: true
+    external: true
+    name: ms-net-swarm
 
 volumes:
   db-data:
-  db-replica-data:
+    external: true

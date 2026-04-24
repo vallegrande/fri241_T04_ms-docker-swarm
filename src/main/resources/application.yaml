@@ -1,32 +1,19 @@
 server:
-  port: 8080
-  url: http://localhost:8080
+  port: ${PORT:8080}
+  url: ${SERVER_URL:http://localhost:8080}
 
 spring:
   application:
     name: ms-student
   r2dbc:
-    url: ${DATABASE_URL:r2dbc:postgresql://db:5432/student_db}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:secret}
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     pool:
       max-idle-time: 10m
       validation-query: SELECT 1
       initial-size: 1
       max-size: 5
-  sql:
-  init:
-    mode: always
-    schema-locations: classpath:schema.sql
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: always
 
 springdoc:
   api-docs:
