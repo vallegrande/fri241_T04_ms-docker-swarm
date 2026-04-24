@@ -1,20 +1,17 @@
-FROM node:18-alpine AS build
+# Stage 1: Build de la aplicación React con Vite
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# Copiamos solo los archivos de configuración primero
 COPY package*.json ./
-
-# Instalamos las dependencias y forzamos que Vite esté disponible
 RUN npm install
-RUN npm install -g vite 
-
-# Ahora copiamos el resto del código
 COPY . .
+RUN npm run build
 
-# Ejecutamos el build usando el binario global para evitar el "not found"
-RUN vite build
-
+# Stage 2: Servidor web con nginx
 FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+RUN apk add --no-cache wget
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
 CMD ["nginx", "-g", "daemon off;"]
